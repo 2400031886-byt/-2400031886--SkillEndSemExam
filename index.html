@@ -291,27 +291,44 @@
   }
 
   function login() {
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const role = document.getElementById('role').value;
-    if (!name || !email) return alert('Please enter name and valid email.');
+    try {
+      console.log('login() called');
+      const nameEl = document.getElementById('name');
+      const emailEl = document.getElementById('email');
+      const roleEl = document.getElementById('role');
+      if (!nameEl || !emailEl || !roleEl) { alert('Login elements missing'); return; }
 
-    // save to local storage (simple persistence for demo)
-    localStorage.setItem('name', name);
-    localStorage.setItem('email', email);
-    localStorage.setItem('role', role);
+      const name = nameEl.value.trim();
+      const email = emailEl.value.trim();
+      const role = roleEl.value;
 
-    // show UI
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('topbar').style.display = 'flex';
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.display = 'block';
+      if (!name || !email) {
+        alert('Please enter name and valid email.');
+        return;
+      }
 
-    // update topbar badge
-    document.getElementById('userBadge').textContent = `${name} (${role.replace('_',' ')})`;
+      // save to local storage (simple persistence for demo)
+      localStorage.setItem('name', name);
+      localStorage.setItem('email', email);
+      localStorage.setItem('role', role);
 
-    // default to dashboard
-    showPage('dashboard', document.querySelector('.sidebar a'));
+      // show UI
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('topbar').style.display = 'flex';
+      document.getElementById('sidebar').style.display = 'block';
+      document.getElementById('main-content').style.display = 'block';
+
+      // update topbar badge
+      const badge = document.getElementById('userBadge');
+      if (badge) badge.textContent = `${name} (${role.replace('_',' ')})`;
+
+      // default to dashboard — find first sidebar link safely
+      const firstLink = document.querySelector('.sidebar a');
+      showPage('dashboard', firstLink || null);
+    } catch (err) {
+      console.error('Login error', err);
+      alert('An error occurred during login. Check console for details.');
+    }
   }
 
   function showLogin() {
@@ -342,7 +359,7 @@
     }
   }
 
-  // Auto-login removed to prevent blocking login
+  // Auto‑login removed to prevent blocking login
 
 </script>
 
