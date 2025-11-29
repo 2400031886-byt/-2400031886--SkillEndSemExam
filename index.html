@@ -226,7 +226,7 @@
         <option value="placement_officer">Placement Officer</option>
         <option value="admin">Admin</option>
       </select>
-      <button id="loginBtn" onclick="login()" disabled>Login</button>
+      <button id="loginBtn" onclick="login()">Login</button>
     </div>
   </div>
 
@@ -234,7 +234,11 @@
     // sample placement records (persisted to localStorage for demo)
     const DEFAULT_RECORDS = [
       { student: 'Rahul K', dept: 'CSE', company: 'CodeWave', package: 8.0, year: 2025 },
-      { student: 'Asha S', dept: 'AIML', company: 'SmartAI', package: 7.2, year: 2025 }
+      { student: 'Asha S', dept: 'AIML', company: 'SmartAI', package: 7.2, year: 2025 },
+      { student: 'Priya M', dept: 'CSE', company: 'DataSolve', package: 5.5, year: 2025 },
+      { student: 'Naresh G', dept: 'CSE', company: 'Google', package: 25.0, year: 2025 },
+      { student: 'Kiran R', dept: 'ECE', company: 'Accenture', package: 6.0, year: 2025 },
+      { student: 'Sanju P', dept: 'CSE', company: 'Amazon', package: 32.0, year: 2025 }
     ];
 
     function setActiveLink(el) {
@@ -284,6 +288,11 @@
               <tr><td>Frontend Developer</td><td>TechCorp</td><td>2025-11-10</td><td style='color:green'>Shortlisted</td></tr>
               <tr><td>Data Analyst</td><td>DataSolve</td><td>2025-11-08</td><td style='color:orange'>Pending</td></tr>
               <tr><td>AI Intern</td><td>SmartAI</td><td>2025-10-22</td><td style='color:red'>Rejected</td></tr>
+              <tr><td>Backend Engineer</td><td>CodeWave</td><td>2025-11-12</td><td style='color:orange'>Pending</td></tr>
+              <tr><td>Cloud Intern</td><td>AWS</td><td>2025-11-02</td><td style='color:green'>Shortlisted</td></tr>
+              <tr><td>Python Developer</td><td>TCS</td><td>2025-10-30</td><td style='color:orange'>Pending</td></tr>
+              <tr><td>QA Tester</td><td>Infosys</td><td>2025-09-21</td><td style='color:red'>Rejected</td></tr>
+              <tr><td>UX Designer</td><td>CreativeLabs</td><td>2025-11-15</td><td style='color:orange'>Pending</td></tr>
             </tbody>
           </table>`;
 
@@ -442,10 +451,12 @@
       const email = document.getElementById('email').value;
       const error = document.getElementById('emailError');
       const loginBtn = document.getElementById('loginBtn');
-      const pattern = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+      // case-insensitive pattern to allow uppercase domains/users
+      const pattern = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
       if (!pattern.test(email)) {
         error.textContent = 'Enter a valid email';
-        loginBtn.disabled = true;
+        // keep button enabled so users on other machines can still try to login and see a clear message
+        loginBtn.disabled = false;
       } else {
         error.textContent = '';
         loginBtn.disabled = false;
