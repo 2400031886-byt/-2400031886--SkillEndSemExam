@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniPlace</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary: #007bff;
+      --bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --sidebar-bg: #1e272e;
+      --sidebar-hover: #3c40c6;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      background: var(--bg);
+    }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topbar button {
+      background: #ff4b4b;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+    .topbar button:hover {
+      background: #d63031;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 240px;
+      height: 100vh;
+      background: var(--sidebar-bg);
+      padding: 20px 0;
+    }
+    .sidebar h3 {
+      text-align: center;
+      color: white;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+    .sidebar a {
+      padding: 12px 20px;
+      display: block;
+      color: white;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+      transition: 0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: var(--sidebar-hover);
+      border-left: 4px solid white;
+    }
+
+    /* Content */
+    .content {
+      margin-left: 240px;
+      padding: 25px;
+    }
+
+    .job-card {
+      background: var(--card-bg);
+      padding: 18px;
+      margin-top: 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      background: var(--card-bg);
+      border-collapse: collapse;
+      margin-top: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    table th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    /* Login Screen */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #dcdde1;
+    }
+    .login-box {
+      width: 350px;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .login-box input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+    }
+    .login-box button {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      padding: 10px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .login-box button:disabled {
+      background: grey;
+      cursor: not-allowed;
+    }
+
+    /* Small helpers */
+    .muted { color: #666; font-size: 14px; }
+    .inline { display:inline-block; }
+    .form-row { display:flex; gap:8px; align-items:center; margin-top:10px; }
+    .form-row input { flex:1 }
+  </style>
+</head>
+
+<body>
+  <div class="topbar" id="topbar" style="display:none">
+    <div id="top-left"><h2 style="margin:0">UniPlace</h2><div id="userBadge" class="muted" style="display:inline;margin-left:12px"></div></div>
+    <div>
+      <button onclick="showLogin()">Logout</button>
+    </div>
+  </div>
+
+  <div class="sidebar" id="sidebar" style="display:none">
+    <h3>Menu</h3>
+    <ul>
+      <li><a href="#" onclick="showPage('dashboard', this)" class="active">Dashboard</a></li>
+      <li><a href="#" onclick="showPage('jobs', this)">Jobs</a></li>
+      <li><a href="#" onclick="showPage('applications', this)">Applications</a></li>
+      <li><a href="#" onclick="showPage('reports', this)">Reports</a></li>
+    </ul>
+  </div>
+
+  <div class="content" id="main-content" style="display:none">
+    <h3>Welcome to UniPlace!</h3>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="login-container" id="login">
+    <div class="login-box">
+      <h2>Login</h2>
+      <input type="text" id="name" placeholder="Enter Name" />
+      <input type="email" id="email" placeholder="Enter Email" oninput="validateEmail()" />
+      <p id="emailError" style="color:red;font-size:12px;"></p>
+      <select id="role">
+        <option value="student">Student</option>
+        <option value="placement_officer">Placement Officer</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button id="loginBtn" onclick="login()">Login</button>
+    </div>
+  </div>
+
+<script>
+  // Sample placement records (for placement officer role). In a real app you'd fetch this from a server.
+  window.placementRecords = [
+    { student: 'Asha', company: 'Google', package: '15 LPA', year: 2025 },
+    { student: 'Rahul', company: 'Microsoft', package: '12 LPA', year: 2025 }
+  ];
+
+  function setActiveLink(current) {
+    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+    if (current) current.classList.add('active');
+  }
+
+  function showPage(page, element) {
+    if (element) setActiveLink(element);
+    const main = document.getElementById("main-content");
+    const role = localStorage.getItem('role') || 'student';
+    const name = localStorage.getItem('name') || '';
+
+    main.innerHTML = `<h3>${page.charAt(0).toUpperCase() + page.slice(1)}</h3>`;
+
+    if (page === "dashboard") {
+      if (role === 'placement_officer') {
+        main.innerHTML += `<div class="job-card"><h4>Officer Dashboard</h4><p>Welcome back, ${name}. You can manage placement records and view reports here.</p></div>`;
+      } else {
+        main.innerHTML += `<div class="job-card"><p>Welcome to your dashboard!</p></div>`;
+      }
+    } 
+    else if (page === "jobs") {
+      main.innerHTML += `
+        <div class="job-card"><h4>Frontend Developer</h4><p>TechCorp - Remote</p></div>
+        <div class="job-card"><h4>AI Intern</h4><p>SmartAI - Hyderabad</p></div>`;
+    }
+
+    else if (page === "applications") {
+      main.innerHTML += `
+        <table>
+          <tr><th>Job</th><th>Company</th><th>Status</th></tr>
+          <tr><td>Data Analyst</td><td>DataSolve</td><td>Pending</td></tr>
+          <tr><td>Developer</td><td>TechCorp</td><td>Shortlisted</td></tr>
+        </table>`;
+    }
+
+    else if (page === "reports") {
+      if (role === 'placement_officer') {
+        // Officer view: show editable records + form to add new
+        main.innerHTML += `
+          <div class="job-card"><h4>Placement Records & Reports (Officer)</h4>
+            <p class="muted">Manage placed students and export reports.</p>
+            <div style="margin-top:12px">
+              <div class="form-row"><input id="recStudent" placeholder="Student Name" /><input id="recCompany" placeholder="Company" /></div>
+              <div class="form-row"><input id="recPackage" placeholder="Package (e.g. 10 LPA)" /><input id="recYear" type="number" placeholder="Year" /></div>
+              <div style="margin-top:10px"><button onclick="addPlacementRecord()">Add Record</button></div>
+            </div>
+          </div>
+          <div id="recordsArea"></div>`;
+        renderPlacementRecords();
+      } else {
+        // Student and Admin view: read-only reports
+        main.innerHTML += `
+          <div class="job-card"><p>Placement Records & Reports</p></div>
+          <table>
+            <tr><th>Student</th><th>Company</th><th>Package</th><th>Year</th></tr>
+            ${window.placementRecords.map(r => `<tr><td>${r.student}</td><td>${r.company}</td><td>${r.package}</td><td>${r.year}</td></tr>`).join('')}
+          </table>`;
+      }
+    }
+  }
+
+  function renderPlacementRecords() {
+    const area = document.getElementById('recordsArea');
+    area.innerHTML = `
+      <table>
+        <tr><th>Student</th><th>Company</th><th>Package</th><th>Year</th><th>Action</th></tr>
+        ${window.placementRecords.map((r, idx) => `
+          <tr>
+            <td>${r.student}</td>
+            <td>${r.company}</td>
+            <td>${r.package}</td>
+            <td>${r.year}</td>
+            <td><button onclick="removeRecord(${idx})">Remove</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    `;
+  }
+
+  function addPlacementRecord() {
+    const s = document.getElementById('recStudent').value.trim();
+    const c = document.getElementById('recCompany').value.trim();
+    const p = document.getElementById('recPackage').value.trim();
+    const y = parseInt(document.getElementById('recYear').value, 10) || new Date().getFullYear();
+    if (!s || !c || !p) { alert('Please fill student, company and package.'); return; }
+    window.placementRecords.push({ student: s, company: c, package: p, year: y });
+    document.getElementById('recStudent').value = '';
+    document.getElementById('recCompany').value = '';
+    document.getElementById('recPackage').value = '';
+    document.getElementById('recYear').value = '';
+    renderPlacementRecords();
+  }
+
+  function removeRecord(idx) {
+    if (!confirm('Remove this record?')) return;
+    window.placementRecords.splice(idx, 1);
+    renderPlacementRecords();
+  }
+
+  function login() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const role = document.getElementById('role').value;
+    if (!name || !email) return alert('Please enter name and valid email.');
+
+    // save to local storage (simple persistence for demo)
+    localStorage.setItem('name', name);
+    localStorage.setItem('email', email);
+    localStorage.setItem('role', role);
+
+    // show UI
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('topbar').style.display = 'flex';
+    document.getElementById('sidebar').style.display = 'block';
+    document.getElementById('main-content').style.display = 'block';
+
+    // update topbar badge
+    document.getElementById('userBadge').textContent = `${name} (${role.replace('_',' ')})`;
+
+    // default to dashboard
+    showPage('dashboard', document.querySelector('.sidebar a'));
+  }
+
+  function showLogin() {
+    document.getElementById('login').style.display = 'flex';
+    document.getElementById('topbar').style.display = 'none';
+    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('main-content').style.display = 'none';
+
+    // clear saved session for demo
+    localStorage.removeItem('name');
+    localStorage.removeItem('email');
+    localStorage.removeItem('role');
+  }
+
+  function validateEmail() {
+    const email = document.getElementById('email').value;
+    const error = document.getElementById('emailError');
+    const button = document.getElementById('loginBtn');
+
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!pattern.test(email)) {
+      error.textContent = "Invalid Email Format";
+    } else {
+      error.textContent = "";
+    } else {
+      error.textContent = "";
+      button.disabled = false;
+    }
+  }
+
+  // If user already logged in (demo) auto-fill UI
+  document.addEventListener("DOMContentLoaded", () => {
+    const savedName = localStorage.getItem('name');
+    const savedRole = localStorage.getItem('role');
+    if (!savedName) {
+      showLogin();
+    } else {
+      // restore UI
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('topbar').style.display = 'flex';
+      document.getElementById('sidebar').style.display = 'block';
+      document.getElementById('main-content').style.display = 'block';
+      document.getElementById('userBadge').textContent = `${savedName} (${(savedRole||'student').replace('_',' ')})`;
+      showPage('dashboard', document.querySelector('.sidebar a'));
+    }
+  });
+</script>
+
+</body>
+</html>
