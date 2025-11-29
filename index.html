@@ -342,22 +342,8 @@
     }
   }
 
-  // If user already logged in (demo) auto-fill UI
-  document.addEventListener("DOMContentLoaded", () => {
-    const savedName = localStorage.getItem('name');
-    const savedRole = localStorage.getItem('role');
-    if (!savedName) {
-      showLogin();
-    } else {
-      // restore UI
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('topbar').style.display = 'flex';
-      document.getElementById('sidebar').style.display = 'block';
-      document.getElementById('main-content').style.display = 'block';
-      document.getElementById('userBadge').textContent = `${savedName} (${(savedRole||'student').replace('_',' ')})`;
-      showPage('dashboard', document.querySelector('.sidebar a'));
-    }
-  });
+  // Auto-login removed to prevent blocking login
+
 </script>
 
 </body>
